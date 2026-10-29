@@ -1,0 +1,126 @@
+// ==========================================
+// Processing 4 Sketch: Robot Collects Battery
+// ==========================================
+
+float robotX, robotY;
+float batteryX, batteryY;
+float batterySpeed = 4.0;
+int score = 0;
+int energy = 100;
+boolean gameOver = false;
+
+void setup() {
+  size(600, 400);
+  robotX = width / 2;
+  robotY = height - 60;
+  resetBattery();
+}
+
+void draw() {
+  background(30, 35, 45); // Dark slate background
+  
+  if (!gameOver) {
+    // 1. Update and handle user input
+    handleInput();
+    
+    // 2. Update battery position
+    batteryY += batterySpeed;
+    
+    // 3. Collision logic (Question 4 code block)
+    checkBatteryCollision();
+    
+    // 4. Render elements
+    drawBattery(batteryX, batteryY);
+    drawRobot(robotX, robotY);
+    drawHUD();
+    
+    // 5. Check Game Over condition
+    if (energy <= 0) {
+      gameOver = true;
+    }
+  } else {
+    drawGameOver();
+  }
+}
+
+void handleInput() {
+  if (keyPressed) {
+    if (keyCode == LEFT)  robotX = max(40, robotX - 5);
+    if (keyCode == RIGHT) robotX = min(width - 40, robotX + 5);
+  }
+}
+
+void resetBattery() {
+  batteryX = random(40, width - 40);
+  batteryY = -20;
+}
+
+void checkBatteryCollision() {
+  float d = dist(robotX, robotY, batteryX, batteryY);
+  
+  if (d < 35) {
+    score += 10;
+    energy = min(100, energy + 15);
+    resetBattery();
+    println("Battery collected! Score: " + score + " | Energy: " + energy);
+  } else if (batteryY > height) {
+    energy = max(0, energy - 10);
+    resetBattery();
+    println("Battery missed! Energy: " + energy);
+  }
+}
+
+void drawRobot(float x, float y) {
+  rectMode(CENTER);
+  fill(120, 140, 160);
+  rect(x, y, 50, 40, 6); // Robot body
+  fill(180, 220, 240);
+  rect(x, y - 8, 30, 14, 4); // Visor screen
+  stroke(255);
+  line(x, y - 20, x, y - 30); // Antenna
+  noStroke();
+  fill(255, 60, 60);
+  circle(x, y - 32, 8); // Antenna tip
+}
+
+void drawBattery(float x, float y) {
+  rectMode(CENTER);
+  fill(50, 205, 50); // Battery green
+  rect(x, y, 22, 34, 4);
+  fill(220);
+  rect(x, y - 19, 10, 4); // Terminal cap
+}
+
+void drawHUD() {
+  fill(255);
+  textSize(14);
+  textAlign(LEFT, CENTER);
+  text("Score: " + score, 20, 20);
+  text("Energy: " + energy + "%", 20, 40);
+  
+  // Energy bar
+  noFill();
+  stroke(200);
+  rectMode(CORNER);
+  rect(120, 32, 100, 12);
+  fill(50, 205, 50);
+  noStroke();
+  rect(120, 32, energy, 12);
+}
+
+void drawGameOver() {
+  textAlign(CENTER, CENTER);
+  fill(255, 80, 80);
+  textSize(32);
+  text("GAME OVER", width / 2, height / 2 - 20);
+  fill(255);
+  textSize(16);
+  text("Final Score: " + score + " | Press 'R' to Restart", width / 2, height / 2 + 20);
+  
+  if (keyPressed && (key == 'r' || key == 'R')) {
+    score = 0;
+    energy = 100;
+    gameOver = false;
+    resetBattery();
+  }
+}
